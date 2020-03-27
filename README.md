@@ -71,6 +71,39 @@ pread, pwrite
 - exit: **93**
 terminates the calling process "immediately"
 
--open: **1024**
+- open: **1024**
 open(const char \*pathname, int flags)
 The open() system call opens the file specified by pathname.
+
+## Uso
+
+### Ensamble
+  ```
+  riscv64-unknown-elf-as <input> -o <output>
+  ```
+
+### Linker
+  ```
+  riscv64-unknown-elf-ld <input> -o <output>
+  ```
+
+### Ejecuci'on
+  ```
+  rv-jit <input>
+  ```
+### Depuraci'on
+```
+  rv-sim <--log-operands> <--log-instructions> <executable>
+```
+
+Los flags de openat son con Or, por ejemplo, ReadWrite es 2 (01) y Append es 1024(10000000000) entonces el flag es Or de ellos 1026
+
+lseek whence1_
+
+```
+#define SEEK_SET    0   /* set file offset to offset */
+#define SEEK_CUR    1   /* set file offset to current plus offset */
+#define SEEK_END    2   /* set file offset to EOF plus offset */
+```
+
+alternativa mmap para cargar a memoria
