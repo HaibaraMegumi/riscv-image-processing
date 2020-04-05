@@ -107,3 +107,8 @@ lseek whence1_
 ```
 
 alternativa mmap para cargar a memoria
+
+
+```sudo apt install python3-pip```
+
+```pip3 install opencv-python```
