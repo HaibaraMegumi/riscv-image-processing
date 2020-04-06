@@ -3,65 +3,77 @@
 _start:
 
 main:
-        addi t0, sp, 0
-        li t0, 700
-        mul t0, t0, t0
-        li t1, 5
-        mul t0, t0, t1
-        sub sp, sp, t0
+
         lui a1, %hi(path)           # load path(hi)
         addi a1, a1, %lo(path)      # load path(lo)
         jal open_file
 
 
+        li sp, 0x7efffff0000f
         mv s0, a0					 # load file descriptor id
         addi a1, sp, 110                    # set buffer address
-        li a2, 9                     # bytes to read
+        #li a2, 606697                     # bytes to read
+        li a2, 10000                     # bytes to read
         li a7, 63                    # _NR_sys_read
         ecall                        # system call
 
-        #load kernel
+        lui a1, %hi(path2)           # load path(hi)
+        addi a1, a1, %lo(path2)      # load path(lo)
+        jal open_file
+        mv t6, a0
+
+        # load kernel
+        # li t0, -1
+        # sb t0, 101(sp)
+        # sb t0, 103(sp)
+        # sb t0, 105(sp)
+        # sb t0, 107(sp)
+        # li t0, 0
+        # sb t0, 100(sp)
+        # sb t0, 102(sp)
+        # sb t0, 106(sp)
+        # sb t0, 108(sp)
+        # li t0, 5
+        # sb t0, 104(sp)
+
+        # li a0, 0							#read
+    	# mv a1, sp
+    	# li a2, 20
+    	# li a7, 63
+    	# ecall
+        #
+        # li a0, 0							#print
+        # mv a1, sp
+        # li a2, 20
+        # li a7, 64
+        # ecall
+
+
         li t0, -1
         sb t0, 101(sp)
         sb t0, 103(sp)
         sb t0, 105(sp)
         sb t0, 107(sp)
-        li t0, 0
         sb t0, 100(sp)
         sb t0, 102(sp)
         sb t0, 106(sp)
         sb t0, 108(sp)
-        li t0, 5
+        li t0, 8
         sb t0, 104(sp)
 
         li a0, 0
         addi a1, sp, 110
         addi a2, sp, 100
-        li a3, 767
-        li a4, 791
-        mul t0, a3, a4
-        addi t0, t0, 200
-        add a5, sp, t0
+        li a3, 100
+        li a4, 100
+        mv a5, t6
         jal process_image
-
-        li t3, 767
-        li t4, 791
-        mul t0, t3, t4
-        lui a1, %hi(path2)           # load path(hi)
-        addi a1, a1, %lo(path2)      # load path(lo)
-        jal open_file
-    	add a1, sp, t0
-        addi a1, a1, 200
-    	mv a2, t0                    # length
-    	li a3, 0
-    	li a7, 64                   # _NR_sys_write
-    	ecall
 
         j end
 
 process_image:
 #input: a0 - pixel, a1 - file address, a2 - kernel address, a3 - columns(width),
-#       a4 - rows(height), a5 - new file address
+#       a4 - rows(height), a5 - new file descriptor
         addi sp, sp, 4
         sw ra, -4(sp)
         mul a6, a3, a4              # calculate total pixels
@@ -75,7 +87,7 @@ process_image:
 
 process_image_recursive:
 #input: a0 - pixel, a1 - file address, a2 - kernel address, a3 - columns(width),
-#       a4 - rows(height), a5 - new file address, a6 - pixels, a7 - curr pixel address
+#       a4 - rows(height), a5 - new file descriptor, a6 - pixels, a7 - curr pixel address
         addi sp, sp, 4
         sw ra, -4(sp)
 loop:
@@ -118,6 +130,9 @@ loop:
         mul t0, t1, t0              # multiply
         add t6, t6, t0              # accumulate
 
+        bltz t3, top_edge
+        bgez t2, bottom_edge
+
         jal convolve_top_left
         sub t5, a7, a3              # address of pixel above
         lbu t0, 1(t5)               # load the value of the top-right diagonal pixel
@@ -129,6 +144,29 @@ loop:
         add t5, a7, a3              # address of pixel below
         lbu t0, -1(t5)              # load the value of the bottom-left diagonal pixel
         lb t1, 6(a2)               # load the kernel's bottom-left value
+
+        mul t0, t1, t0              # multiply
+        add t6, t6, t0              # accumulate
+
+        j loopback
+
+top_edge:
+        jal convolve_bottom_left
+        add t5, a7, a3              # address of pixel below
+        lbu t0, 1(t5)               # load the value of the bottom-right diagonal pixel
+        lb t1, 8(a2)               # load the kernel's bottom-right value
+
+        mul t0, t1, t0              # multiply
+        add t6, t6, t0              # accumulate
+
+        j loopback
+
+bottom_edge:
+        jal convolve_top_left
+        sub t5, a7, a3              # address of pixel above
+
+        lbu t0, 1(t5)               # load the value of the top-right diagonal pixel
+        lb t1, 2(a2)               # load the kernel's top-right value
 
         mul t0, t1, t0              # multiply
         add t6, t6, t0              # accumulate
@@ -254,8 +292,30 @@ crop_255:
         li t6, 255
         j write
 write:
-        add t0, a0, a5
-        sb t6, 0(t0)
+        lbu t0, 0(sp)
+        sb t6, 0(sp)
+
+        mv t1, a0
+        mv t2, a1
+        mv t3, a2
+        mv t4, a3
+        mv t5, a7
+
+        mv a0, a5
+        mv a1, sp
+        li a2, 1                    # length
+        li a3, 0
+        li a7, 64                   # _NR_sys_write
+        ecall
+
+        sb t0, 0(sp)
+
+        mv a0, t1
+        mv a1, t2
+        mv a2, t3
+        mv a3, t4
+        mv a7, t5
+
         addi a0, a0, 1
         add a7, a1, a0              # add offset (calculate address of current pixel)
         j loop
@@ -266,40 +326,6 @@ return:
         ret
 
 
-open_file:
-#input: a1 - file path
-#output: a0 - file descriptor id
-        li a0, 0
-        li a2, 1026                  # mode read-write flag append
-        li a7, 56                    # _NR_sys_openat
-        ecall                        # system call
-
-        mv t1, a0                    # store return value in t1
-        bgtz a0, y                   # check if file descriptor id is grater than 0
-
-      #else
-n:      li a0, 0                     # stdout
-        lui a1, %hi(no)              # load msg(hi)
-        addi a1, a1, %lo(no)         # load msg(lo)
-        li a2, 15                    # length
-        li a3, 0
-        li a7, 64                    # _NR_sys_write
-        ecall                        # system call
-        j end
-
-        #then
-y:      li a0, 0                     # stdout
-        lui a1, %hi(yes)             # load msg(hi)
-        addi a1, a1, %lo(yes)        # load msg(lo)
-        li a2, 11                    # length
-        li a3, 0                     #
-        li a7, 64                    # _NR_sys_write
-        ecall                        # system call
-        mv a0, t1
-        ret
-        #end of function 'open_file'
-
-
 end:
         li a0, 0
         li a1, 0
@@ -307,13 +333,3 @@ end:
         li a3, 0
         li a7, 93                   # _NR_sys_exit
         ecall                       # system call
-
-.section .rodata
-path:
-	.string "/home/mherrera/Documents/projects/sharpening/testImg.txt"
-path2:
-	.string "/home/mherrera/Documents/projects/sharpening/sharpImg.txt"
-yes:
-	.string "File found\n"
-no:
-	.string "File not found\n"

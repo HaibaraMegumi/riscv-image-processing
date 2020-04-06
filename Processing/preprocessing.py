@@ -1,7 +1,7 @@
 import cv2
 import numpy
 
-def read_grayscale(img_path, new_path):
+def make_grayscale(img_path, new_path):
 
     #read input image
     gray_img = cv2.imread(img_path, 0)
@@ -20,7 +20,6 @@ def read_grayscale(img_path, new_path):
     new_img.close()
 
 
-read_grayscale("/home/mherrera/Downloads/mushroom.png","testImg.txt")
 
 def read_sharpened(img_path, columns):
     sharp_img = []
@@ -37,17 +36,19 @@ def read_sharpened(img_path, columns):
             col += 1
             byte = img.read(1)
         sharp_img.append(row)
-    sharp_img = numpy.array(sharp_img, dtype=numpy.uint8)
+    sharp_img = numpy.matrix(sharp_img, dtype=numpy.uint8)
     sharp_img = cv2.resize(sharp_img, (600,600))
     cv2.imshow("window", sharp_img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-def write_test(img_path, input_bytes):
-    with open(img_path, "wb") as img:
-        for byte in input_bytes:
-            img.write(byte.to_bytes(1, byteorder='big', signed=False))
-
-# write_test('testImg.txt', [206, 205, 247, 244, 161, 137, 192, 154, 75])
-# write_test('testImg.txt', [1,2,3,4,5,6,7,8,9])
-# read_sharpened('testImg.txt', 3)
+# def write_test(img_path, input_bytes):
+#     with open(img_path, "wb") as img:
+#         for byte in input_bytes:
+#             img.write(byte.to_bytes(1, byteorder='big', signed=False))
+#
+# # write_test('testImg.txt', [206, 205, 247, 244, 161, 137, 192, 154, 75])
+# # write_test('testImg.txt', [1,2,3,4,5,6,7,8,9])
+# make_grayscale("./../Data/Vd-Orig.png","./../Output/original.txt")
+read_sharpened("./../Output/original.txt", 100)
+read_sharpened('./../Output/sharpened.txt', 100)

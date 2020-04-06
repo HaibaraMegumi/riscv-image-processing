@@ -118,3 +118,8 @@ using atom with language-riscv package
 
 
 no se pueden hacer varios jal seguidos hay que guardar el ra
+
+sharpening
+0 -1 0
+-1 5 -1
+0 -1 0
