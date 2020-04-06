@@ -1,4 +1,5 @@
 .section .text
+
 open_file:
 #input: a1 - file path
 #output: a0 - file descriptor id
@@ -32,6 +33,20 @@ y:      li a0, 0                     # stdout
         mv a0, t1
         ret
         #end of function 'open_file'
+
+write:
+#input: a0 - byte value, a1 - file descriptor
+        addi sp, sp, -1
+        sb a0, 0(sp)
+
+        mv a0, a5
+        mv a1, sp
+        li a2, 1                    # length
+        li a3, 0
+        li a7, 64                   # _NR_sys_write
+        ecall
+        addi sp, sp, 1
+        ret
 
 .section .rodata
 yes:

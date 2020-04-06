@@ -52,3 +52,59 @@ def read_sharpened(img_path, columns):
 # make_grayscale("./../Data/Vd-Orig.png","./../Output/original.txt")
 read_sharpened("./../Output/original.txt", 100)
 read_sharpened('./../Output/sharpened.txt', 100)
+
+
+def convolve():
+    conv_5
+    if L:
+        conv_6
+        if T:
+            #A
+            conv_8
+            conv_9
+        elif B:
+            #B
+            conv_2
+            conv_3
+        else:
+            #A
+            #B
+            conv_8
+            conv_9
+            conv_2
+            conv_3
+    elif R:
+        conv_4
+        if T:
+            #C
+            conv_7
+            conv_8
+        elif B:
+            #D
+            conv_1
+            conv_2
+        else:
+            #C
+            #D
+            conv_7
+            conv_8
+            conv_1
+            conv_2
+    # conv_4
+    # conv_6
+    elif T:
+    
+        conv_7
+        conv_8
+        conv_9
+    elif B:
+        conv_1
+        conv_2
+        conv_3
+    else:
+        conv_1
+        conv_2
+        conv_3
+        conv_7
+        conv_8
+        conv_9
