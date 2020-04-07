@@ -130,3 +130,6 @@ riscv64-unknown-elf-as sharpen.s data.s io.s -o ../Output/sharp.o
 riscv64-unknown-elf-ld ../Output/sharp.o -o ../Output/sharp.out
 
 rv-jit  ../Output/sharp.out
+
+
+pip3 install matplotlib

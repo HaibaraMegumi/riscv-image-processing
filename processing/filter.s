@@ -3,80 +3,60 @@
 _start:
 
 main:
-        lui a1, %hi(path)           # load path(hi)
-        addi a1, a1, %lo(path)      # load path(lo)
+        lui a1, %hi(input_path)           # load input path(hi)
+        addi a1, a1, %lo(input_path)      # load input path(lo)
         jal open_file
 
-        li t0, 100
-        mul t0, t0, t0
+        li t0, WIDTH
+        li t1, HEIGHT
+        mul t0, t0, t1
         sub sp, sp, t0
-        mv a1, sp                  # set buffer address
-        li a2, 10000                 # bytes to read
-        li a7, 63                    # _NR_sys_read
-        ecall                        # system call
+        mv a1, sp                         # set buffer address
+        mv a2, t0                         # bytes to read
+        li a7, 63                         # _NR_sys_read
+        ecall                             # system call
 
-        mv s0, sp
+        mv t0, sp
+        addi sp, sp, -8
+        sd t0, 0(sp)                      # store image file address
 
-        lui a1, %hi(path2)           # load path(hi)
-        addi a1, a1, %lo(path2)      # load path(lo)
+        lui a1, %hi(output_path)          # load output path(hi)
+        addi a1, a1, %lo(output_path)     # load output path(lo)
         jal open_file
-        mv t2, a0
 
-        mv t1, s0
-
-        # load kernel
-        addi sp, sp, -16
-        li t0, -1
-        sb t0, 1(sp)
-        sb t0, 3(sp)
-        sb t0, 5(sp)
-        sb t0, 7(sp)
-        li t0, 0
-        sb t0, 0(sp)
-        sb t0, 2(sp)
-        sb t0, 6(sp)
-        sb t0, 8(sp)
-        li t0, 5
-        sb t0, 4(sp)
-
-        # li a0, 0							#read
-    	# mv a1, sp
-    	# li a2, 20
-    	# li a7, 63
-    	# ecall
-        #
-        # li a0, 0							#print
-        # mv a1, sp
-        # li a2, 20
-        # li a7, 64
-        # ecall
+        addi sp, sp, -8
+        sd a0, 0(sp)                      # store output file descriptor
 
 # load kernel
-        # addi sp, sp, -16
-        # li t0, -1
-        # sb t0, 1(sp)
-        # sb t0, 3(sp)
-        # sb t0, 5(sp)
-        # sb t0, 7(sp)
-        # sb t0, 0(sp)
-        # sb t0, 2(sp)
-        # sb t0, 6(sp)
-        # sb t0, 8(sp)
-        # li t0, 8
-        # sb t0, 4(sp)
+        lui a1, %hi(kernel_path)          # load kernel path(hi)
+        addi a1, a1, %lo(kernel_path)     # load kernel path(lo)
+        jal open_file
 
-        mv a2, sp #kernel address
+        ld t0, 0(sp)                      # load output file descriptor
+        addi sp, sp, 8
+        ld t1, 0(sp)                      # load image file address
+        addi sp, sp, 8
+
+
+        addi sp, sp, -16
+        mv a1, sp                          # set buffer address
+        li a2, 9                           # bytes to read (kernel size)
+        li a7, 63                          # _NR_sys_read
+        ecall                              # system call
 
         li a0, 0
         mv a1, t1
-        li a3, 100
-        li a4, 100
-        mv a5, t2
+        mv a2, sp #kernel address
+        li a3, WIDTH
+        li a4, HEIGHT
+        mv a5, t0
         jal process_image
 
         addi sp, sp, 16 #delete kernel
-        li t0, 100
-        mul t0, t0, t0
+
+        li t0, WIDTH
+        li t1, HEIGHT
+        mul t0, t0, t1
         add sp, sp, t0
 
         j end

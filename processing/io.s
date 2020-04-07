@@ -14,8 +14,8 @@ open_file:
 
       #else
 n:      li a0, 0                     # stdout
-        lui a1, %hi(no)              # load msg(hi)
-        addi a1, a1, %lo(no)         # load msg(lo)
+        lui a1, %hi(file_not_found)              # load msg(hi)
+        addi a1, a1, %lo(file_not_found)         # load msg(lo)
         li a2, 15                    # length
         li a3, 0
         li a7, 64                    # _NR_sys_write
@@ -24,8 +24,8 @@ n:      li a0, 0                     # stdout
 
         #then
 y:      li a0, 0                     # stdout
-        lui a1, %hi(yes)             # load msg(hi)
-        addi a1, a1, %lo(yes)        # load msg(lo)
+        lui a1, %hi(file_found)             # load msg(hi)
+        addi a1, a1, %lo(file_found)        # load msg(lo)
         li a2, 11                    # length
         li a3, 0                     #
         li a7, 64                    # _NR_sys_write
@@ -47,9 +47,3 @@ write:
         ecall
         addi sp, sp, 1
         ret
-
-.section .rodata
-yes:
-	.string "File found\n"
-no:
-	.string "File not found\n"
