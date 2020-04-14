@@ -3,94 +3,154 @@
 _start:
 
 main:
-        lui a1, %hi(input_path)           # load input path(hi)
-        addi a1, a1, %lo(input_path)      # load input path(lo)
+        addi sp, sp, -64
+        sd s0, 0(sp)
+        sd s1, 8(sp)
+        sd s2, 16(sp)
+        sd s3, 24(sp)
+        sd s4, 32(sp)
+        sd s5, 40(sp)
+        sd s6, 48(sp)
+        sd s7, 56(sp)
+
+        # load constants
+        li s0, WIDTH
+        li s1, HEIGHT
+        li s2, BUFFER_SIZE
+
+        lui a1, %hi(input_path)             # load input path(hi)
+        addi a1, a1, %lo(input_path)        # load input path(lo)
         jal open_file
 
-        li t0, WIDTH
-        li t1, HEIGHT
-        mul t0, t0, t1
-        sub sp, sp, t0
-        mv a1, sp                         # set buffer address
-        mv a2, t0                         # bytes to read
-        li a7, 63                         # _NR_sys_read
-        ecall                             # system call
+        mv s3, a0                           # input file descriptor
 
-        mv t0, sp
-        addi sp, sp, -8
-        sd t0, 0(sp)                      # store image file address
-
-        lui a1, %hi(output_path)          # load output path(hi)
-        addi a1, a1, %lo(output_path)     # load output path(lo)
+        lui a1, %hi(output_path)            # load output path(hi)
+        addi a1, a1, %lo(output_path)       # load output path(lo)
         jal open_file
 
-        addi sp, sp, -8
-        sd a0, 0(sp)                      # store output file descriptor
+        mv s4, a0                           # output file descriptor
 
-# load kernel
-        lui a1, %hi(kernel_path)          # load kernel path(hi)
-        addi a1, a1, %lo(kernel_path)     # load kernel path(lo)
+        lui a1, %hi(kernel_path)            # load kernel path(hi)
+        addi a1, a1, %lo(kernel_path)       # load kernel path(lo)
         jal open_file
-
-        ld t0, 0(sp)                      # load output file descriptor
-        addi sp, sp, 8
-        ld t1, 0(sp)                      # load image file address
-        addi sp, sp, 8
-
 
         addi sp, sp, -16
-        mv a1, sp                          # set buffer address
-        li a2, 9                           # bytes to read (kernel size)
-        li a7, 63                          # _NR_sys_read
-        ecall                              # system call
+        mv a1, sp                           # set buffer address
+        li a2, 9                            # bytes to read (kernel size)
+        li a7, 63                           # _NR_sys_read
+        ecall                               # system call
 
-        li a0, 0
-        mv a1, t1
-        mv a2, sp #kernel address
-        li a3, WIDTH
-        li a4, HEIGHT
-        mv a5, t0
+        mv s5, sp                           # kernel address
+
+        mul s7, s0, s1                      # total pixels
+        sub sp, sp, s2                      # reserve image buffer
+
+
+        li t2, 0
+loop_image:
+        blt s7, s2, image_smaller_than_buffer
+# image bigger than buffer
+        div t1, s2, s0                      # buffer size / columns = rows that fit in
+        mul t0, t1, s0                      # pixels to process
+        sub s7, s7, t0
+        mv a0, s3                           # input file descriptor
+        mv a1, sp                           # set buffer address
+        mv a2, t0                           # bytes to read
+        li a7, 63                           # _NR_sys_read
+        ecall                               # system call
+        mv s6, sp                           # image address
+
+        mv a0, t2                           # start pixel
+        mv a1, s6                           # image address
+        mv a2, s5                           # kernel address
+        mv a3, s0                           # WIDTH (# columns)
+        mv a4, t1                           # rows
+        mv a5, s4                           # output file descriptor
+        li a6, 1
         jal process_image
 
-        addi sp, sp, 16 #delete kernel
+        mv a0, s3                           # input file descriptor
+        mul t0, s0, s1
+        sub t0, t0, s7
+        mv a1, t0                           # set offset
+        li a2, 0                            # whence
+        li a7, 62                           # _NR_sys_lseek
+        ecall                               # system call
 
-        li t0, WIDTH
-        li t1, HEIGHT
-        mul t0, t0, t1
-        add sp, sp, t0
+
+        mv t2, s0
+        j loop_image
+
+
+image_smaller_than_buffer:
+
+        mv a0, s3                           # input file descriptor
+        mv a1, sp                           # set buffer address
+        mv a2, s7                           # bytes to read
+        li a7, 63                           # _NR_sys_read
+        ecall                               # system call
+
+        mv s6, sp                           # image address
+
+        mv a0, t2
+        mv a1, s6                           # image address
+        mv a2, s5                           # kernel address
+        mv a3, s0                           # WIDTH (# columns)
+        div a4, s7, s0                      # HEIGHT
+        mv a5, s4                           # output file descriptor
+        li a6, 0
+        jal process_image
+
+empty_stack:
+        add sp, sp, s2                      # delete buffer
+        addi sp, sp, 16                     # delete kernel
+
+        ld s0, 0(sp)
+        ld s1, 8(sp)
+        ld s2, 16(sp)
+        ld s3, 24(sp)
+        ld s4, 32(sp)
+        ld s5, 40(sp)
+        ld s6, 48(sp)
+        ld s7, 56(sp)
+        addi sp, sp, 64
 
         j end
 
 process_image:
 #input: a0 - pixel, a1 - file address, a2 - kernel address, a3 - columns(width),
 #       a4 - rows(height), a5 - new file descriptor
-        addi sp, sp, -40
+        addi sp, sp, -56
         sd ra, 0(sp)
-        mul a6, a3, a4              # calculate total pixels
 loop:
         add a7, a1, a0              # add offset (calculate address of current pixel)
         bltz a0, end_loop             # return if pixel < 0
-        bge a0, a6, end_loop          # return if pixel >= total pixels
         sd a0, 8(sp)
         sd a1, 16(sp)
         sd a2, 24(sp)
         sd a3, 32(sp)
+        sd a6, 40(sp)
+        sd a5, 48(sp)
+        mul a5, a3, a4              # calculate total pixels
+        bge a0, a5, end_loop          # return if pixel >= total pixels
         jal process_image_recursive
+        ld a5, 48(sp)
         jal write
         ld a0, 8(sp)
         ld a1, 16(sp)
         ld a2, 24(sp)
         ld a3, 32(sp)
+        ld a6, 40(sp)
         addi a0, a0, 1
         j loop
 end_loop:
         ld ra, 0(sp)
-        addi sp, sp, 40
+        addi sp, sp, 56
         ret
 
 process_image_recursive:
 #input: a0 - pixel, a1 - file address, a2 - kernel address, a3 - columns(width),
-#       a4 - rows(height), a6 - pixels, a7 - curr pixel address
+#       a4 - rows(height), a5 - pixels, a6 - not end of image, a7 - curr pixel address
         addi sp, sp, -8
         sd ra, 0(sp)
 
@@ -107,9 +167,12 @@ process_image_recursive:
                                     # if t3 < 0 current pixel is at the top of the image
 
         add t2, a0, a3              # pixel below current pixel (current + columns)
-        sub t2, t2, a6              # substract total amount of pixels
+        sub t2, t2, a5              # substract total amount of pixels
                                     # if t2 >= 0 current pixel is at the bottom of the image
+        beqz a6, end_of_image
+        li t2, -1
 
+end_of_image:
         jal convolve_center
         beqz t5, left_edge
         beqz t4, right_edge

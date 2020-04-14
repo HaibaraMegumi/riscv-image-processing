@@ -32,6 +32,7 @@ data_path = project_full_path + '/processing/data.s'
 
 input_grayscale_path = project_full_path + "/output/img.txt"
 height, width = image_handler.make_grayscale(input_full_path, input_grayscale_path)
+buffer_size = 650000
 
 with fileinput.FileInput(data_path, inplace=True) as file:
     for line in file:
@@ -40,6 +41,7 @@ with fileinput.FileInput(data_path, inplace=True) as file:
         line = line.replace('$$KERNEL$$', kernel_full_path)
         line = line.replace('$$WIDTH$$', str(width))
         line = line.replace('$$HEIGHT$$', str(height))
+        line = line.replace('$$BUFFER_SIZE$$', str(buffer_size))
         print(line, end='')
 
 
@@ -86,4 +88,5 @@ with fileinput.FileInput(data_path, inplace=True) as file:
         line = line.replace(kernel_full_path, '$$KERNEL$$')
         line = line.replace("WIDTH, " + str(width), 'WIDTH, $$WIDTH$$')
         line = line.replace("HEIGHT, " + str(height), 'HEIGHT, $$HEIGHT$$')
+        line = line.replace("BUFFER_SIZE, " + str(buffer_size), 'BUFFER_SIZE, $$BUFFER_SIZE$$')
         print(line, end='')

@@ -13,3 +13,4 @@ file_not_found:
 .section .text
     .equ WIDTH, $$WIDTH$$
     .equ HEIGHT, $$HEIGHT$$
+    .equ BUFFER_SIZE, $$BUFFER_SIZE$$
