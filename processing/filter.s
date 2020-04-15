@@ -64,16 +64,17 @@ loop_image:
         mv a1, s6                           # image address
         mv a2, s5                           # kernel address
         mv a3, s0                           # WIDTH (# columns)
-        mv a4, t1                           # rows
+        addi t1, t1, -1
+        mv a4, t1                           # rows - 1
         mv a5, s4                           # output file descriptor
         li a6, 1
         jal process_image
 
         mv a0, s3                           # input file descriptor
-        mul t0, s0, s1
-        sub t0, t0, s7
+        li t0, -2
+        mul t0, s0, t0
         mv a1, t0                           # set offset
-        li a2, 0                            # whence
+        li a2, 1                            # whence
         li a7, 62                           # _NR_sys_lseek
         ecall                               # system call
 
