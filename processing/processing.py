@@ -32,7 +32,7 @@ data_path = project_full_path + '/processing/data.s'
 
 input_grayscale_path = project_full_path + "/output/img.txt"
 height, width = image_handler.make_grayscale(input_full_path, input_grayscale_path)
-buffer_size = 50000
+buffer_size = 650000
 
 with fileinput.FileInput(data_path, inplace=True) as file:
     for line in file:

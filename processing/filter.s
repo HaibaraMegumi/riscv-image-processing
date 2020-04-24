@@ -53,6 +53,8 @@ loop_image:
         div t1, s2, s0                      # buffer size / columns = rows that fit in
         mul t0, t1, s0                      # pixels to process
         sub s7, s7, t0
+        add s7, s7, t2
+        add s7, s7, s0
         mv a0, s3                           # input file descriptor
         mv a1, sp                           # set buffer address
         mv a2, t0                           # bytes to read
