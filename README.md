@@ -133,3 +133,9 @@ rv-jit  ../Output/sharp.out
 
 
 pip3 install matplotlib
+
+git clone sharpening
+cd sharpening
+git submodule update --init --recursive
+cd rv8
+make

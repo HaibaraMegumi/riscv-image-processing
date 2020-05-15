@@ -85,15 +85,9 @@ def script():
 
     try:
         os.system('touch ' + raw_grayscale_filtered_path)
-        # print("Compiling files...")
-        # os.system('riscv64-unknown-elf-as data.s filter.s io.s -o temp.o')
-        # print("Linking files...")
-        # os.system('riscv64-unknown-elf-ld temp.o -o ../output/filter.out')
-        # print("Running simulation...")
-        os.system('rv-jit ../output/filter.out')
+        print("Running simulation...")
+        os.system('../rv8/build/linux_x86_64/bin/rv-jit ../output/filter.out')
         print("Cleaning up...")
-        # os.system('rm temp.o')
-        # os.system('rm ./filter.out')
     except:
         print("Error")
 
