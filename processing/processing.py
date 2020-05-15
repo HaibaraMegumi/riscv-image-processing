@@ -2,91 +2,139 @@ import kernel_handler
 import image_handler
 import fileinput
 import argparse
+import cv2
 import os
 
 
 # Construct the argument parser
-ap = argparse.ArgumentParser()
+def initialize_argument_parser():
+    ap = argparse.ArgumentParser()
 
-# Add the arguments to the parser
-ap.add_argument("-i", "--img-path", required=True,
-   help="absolute or relative path to image")
+    # Add the arguments to the parser
+    ap.add_argument("-i", "--img-path", required=True,
+                    help="absolute or relative path to image")
 
-ap.add_argument("-k", "--kernel-id", required=False,
-   help="kernel identifier")
-ap.add_argument("-o", "--output", required=False,
-  help="absolute or relative path to output file")
-ap.add_argument("-nk", "--new-kernel", required=False,
-   help="new kernel")
-args = vars(ap.parse_args())
-
-input_full_path = os.path.abspath(args['img_path'])
-
-project_full_path = os.path.abspath('..')
-
-output_full_path = project_full_path + '/output/temp.txt'
-
-kernel_full_path = project_full_path + '/processing/.kernel'
-
-data_path = project_full_path + '/processing/data.s'
-
-input_grayscale_path = project_full_path + "/output/img.txt"
-height, width = image_handler.make_grayscale(input_full_path, input_grayscale_path)
-buffer_size = 650000
-
-with fileinput.FileInput(data_path, inplace=True) as file:
-    for line in file:
-        line = line.replace('$$INPUT$$', input_grayscale_path)
-        line = line.replace('$$OUTPUT$$', output_full_path)
-        line = line.replace('$$KERNEL$$', kernel_full_path)
-        line = line.replace('$$WIDTH$$', str(width))
-        line = line.replace('$$HEIGHT$$', str(height))
-        line = line.replace('$$BUFFER_SIZE$$', str(buffer_size))
-        print(line, end='')
+    ap.add_argument("-k", "--kernel-id", required=False,
+                    help="kernel identifier")
+    ap.add_argument("-o", "--output", required=False,
+                    help="absolute or relative path to output file")
+    ap.add_argument("-nk", "--new-kernel", required=False,
+                    help="new kernel")
+    return vars(ap.parse_args())
 
 
-kernel = args['kernel_id']
-if kernel == '1' or kernel == None:
-    kernel_handler.update_kernel([0,-1,0,-1,5,-1,0,-1,0])
-elif kernel == '2':
-    kernel_handler.update_kernel([-1,-1,-1,-1,8,-1,-1,-1,-1])
-elif kernel == '3':
-    kernel_handler.update_kernel([-1,-2,-1,0,0,0,1,2,1])
-elif kernel == '4':
-    kernel_handler.update_kernel([-2,-1,0,-1,1,1,0,1,2])
-elif kernel == '5':
-    kernel_handler.update_kernel([1,2,1,0,0,0,-1,-2,-1])
-
-new_kernel = args['new_kernel']
-if new_kernel != None:
-    new_kernel = new_kernel.split(',')
-    new_kernel = [int(i) for i in new_kernel]
-    if len(new_kernel) == 9:
-        kernel_handler.update_kernel(new_kernel)
+def restore_file(output, _input):
+    with open(_input) as f:
+        with open(output, "w") as f1:
+            for line in f:
+                f1.write(line)
 
 
-os.system('touch ' + output_full_path)
-os.system('riscv64-unknown-elf-as data.s filter.s io.s -o temp.o')
-os.system('riscv64-unknown-elf-ld temp.o -o ../output/filter.out')
-os.system('rm temp.o')
-os.system('rv-jit ../output/filter.out')
+def update_kernel(kernel, new_kernel):
+    if kernel == '2':  # over sharpening
+        print("Using kernel for over-sharpening...")
+        kernel_handler.update_kernel([0, -6, 0, -6, 6, -6, 0, -6, 0])
+    elif kernel == '3':  # blurring
+        print("Using kernel for blurring...")
+        kernel_handler.update_kernel([1, -10, 1, -10, 1, -10, 1, -10, 1])
+    elif kernel == '4':  # edge detection
+        print("Using kernel for edge detection...")
+        kernel_handler.update_kernel([-1, -1, -1, -1, 8, -1, -1, -1, -1])
+    elif kernel == '5':  # emboss
+        print("Using kernel for emboss...")
+        kernel_handler.update_kernel([-2, -1, 0, -1, 1, 1, 0, 1, 2])
+    elif kernel == '6':  # bottom sobel
+        print("Using kernel for bottom sobel...")
+        kernel_handler.update_kernel([-1, -2, -1, 0, 0, 0, 1, 2, 1])
+    elif kernel == '7':  # top sobel
+        print("Using kernel for top sobel...")
+        kernel_handler.update_kernel([1, 2, 1, 0, 0, 0, -1, -2, -1])
+    else:  # sharpening
+        print("Using kernel for sharpening...")
+        kernel_handler.update_kernel([0, -1, 0, -1, 5, -1, 0, -1, 0])
 
-if args['output'] == None:
-    output_img_path = os.path.abspath("../output/filtered.png")
-else:
-    output_img_path = os.path.abspath(args['output'])
+    if new_kernel is not None:
+        try:
+            new_kernel = new_kernel.split(',')
+            new_kernel = [int(i) for i in new_kernel]
+            if len(new_kernel) == 9:
+                kernel_handler.update_kernel(new_kernel)
+        except:
+            print("Invalid kernel, using sharpening...")
+            kernel_handler.update_kernel([0, -1, 0, -1, 5, -1, 0, -1, 0])
 
-image_handler.display_image(output_full_path, width, output_img_path)
 
-os.system('rm ../output/temp.txt')
-os.system('rm ' + input_grayscale_path)
+def script():
+    args = initialize_argument_parser()
 
-with fileinput.FileInput(data_path, inplace=True) as file:
-    for line in file:
-        line = line.replace(input_grayscale_path, '$$INPUT$$')
-        line = line.replace(output_full_path, '$$OUTPUT$$')
-        line = line.replace(kernel_full_path, '$$KERNEL$$')
-        line = line.replace("WIDTH, " + str(width), 'WIDTH, $$WIDTH$$')
-        line = line.replace("HEIGHT, " + str(height), 'HEIGHT, $$HEIGHT$$')
-        line = line.replace("BUFFER_SIZE, " + str(buffer_size), 'BUFFER_SIZE, $$BUFFER_SIZE$$')
-        print(line, end='')
+    # All paths are absolute
+    project_full_path = os.path.abspath('..')
+    input_image_path = os.path.abspath(args['img_path'])
+    raw_grayscale_filtered_path = project_full_path + '/output/raw_filtered'
+    raw_grayscale_unfiltered_path = project_full_path + "/output/raw_unfiltered"
+    kernel_path = project_full_path + '/processing/.kernel'
+    assembly_data_path = project_full_path + '/processing/data.s'
+
+    # Make input image grayscale
+    height, width = image_handler.make_grayscale(input_image_path, raw_grayscale_unfiltered_path)
+    if height == 0:
+        print("Exiting due to previous errors")
+        return
+
+    buffer_size = 650000
+    try:
+        with fileinput.FileInput(assembly_data_path, inplace=True) as file:
+            for line in file:
+                line = line.replace('$$INPUT$$', raw_grayscale_unfiltered_path)
+                line = line.replace('$$OUTPUT$$', raw_grayscale_filtered_path)
+                line = line.replace('$$KERNEL$$', kernel_path)
+                line = line.replace('$$WIDTH$$', str(width))
+                line = line.replace('$$HEIGHT$$', str(height))
+                line = line.replace('$$BUFFER_SIZE$$', str(buffer_size))
+                print(line, end='')
+    except:
+        restore_file(assembly_data_path, assembly_data_path + ".copy")
+
+    kernel = args['kernel_id']
+    new_kernel = args['new_kernel']
+
+    update_kernel(kernel, new_kernel)
+
+    try:
+        os.system('touch ' + raw_grayscale_filtered_path)
+        print("Compiling files...")
+        os.system('riscv64-unknown-elf-as data.s filter.s io.s -o temp.o')
+        print("Linking files...")
+        os.system('riscv64-unknown-elf-ld temp.o -o ../output/filter.out')
+        print("Running simulation...")
+        os.system('rv-jit ../output/filter.out')
+        print("Cleaning up...")
+        os.system('rm temp.o')
+        os.system('rm ../output/filter.out')
+    except:
+        print("Error")
+
+    input_img_path = os.path.abspath("../output/unfiltered.png")
+    if args['output'] is None:
+        output_img_path = os.path.abspath("../output/filtered.png")
+    else:
+        output_img_path = os.path.abspath(args['output'])
+
+    try:
+        print("Displaying image...")
+        image_handler.display_image(raw_grayscale_filtered_path, width, output_img_path, "Filtered image")
+        image_handler.display_image(raw_grayscale_unfiltered_path, width, input_img_path, "Unfiltered image")
+        print("Waiting for image...")
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+    except:
+        print("Visualization error")
+
+    print("Cleaning up...")
+    os.system('rm ' + raw_grayscale_filtered_path)
+    os.system('rm ' + raw_grayscale_unfiltered_path)
+    restore_file(assembly_data_path, assembly_data_path + ".copy")
+    print("Done")
+
+
+script()

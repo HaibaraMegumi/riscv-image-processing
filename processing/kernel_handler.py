@@ -1,5 +1,6 @@
 kernel_path = "./.kernel"
 
+
 def update_kernel(kernel):
     with open(kernel_path, "wb") as kernel_file:
         for byte in kernel:
