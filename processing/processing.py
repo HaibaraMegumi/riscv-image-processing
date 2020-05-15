@@ -1,6 +1,5 @@
 import kernel_handler
 import image_handler
-import fileinput
 import argparse
 import cv2
 import os
@@ -70,30 +69,14 @@ def script():
     # All paths are absolute
     project_full_path = os.path.abspath('..')
     input_image_path = os.path.abspath(args['img_path'])
-    raw_grayscale_filtered_path = project_full_path + '/output/raw_filtered'
-    raw_grayscale_unfiltered_path = project_full_path + "/output/raw_unfiltered"
-    kernel_path = project_full_path + '/processing/.kernel'
-    assembly_data_path = project_full_path + '/processing/data.s'
+    raw_grayscale_filtered_path = './raw_filtered'
+    raw_grayscale_unfiltered_path = "./raw_unfiltered"
 
     # Make input image grayscale
     height, width = image_handler.make_grayscale(input_image_path, raw_grayscale_unfiltered_path)
     if height == 0:
         print("Exiting due to previous errors")
         return
-
-    buffer_size = 650000
-    try:
-        with fileinput.FileInput(assembly_data_path, inplace=True) as file:
-            for line in file:
-                line = line.replace('$$INPUT$$', raw_grayscale_unfiltered_path)
-                line = line.replace('$$OUTPUT$$', raw_grayscale_filtered_path)
-                line = line.replace('$$KERNEL$$', kernel_path)
-                line = line.replace('$$WIDTH$$', str(width))
-                line = line.replace('$$HEIGHT$$', str(height))
-                line = line.replace('$$BUFFER_SIZE$$', str(buffer_size))
-                print(line, end='')
-    except:
-        restore_file(assembly_data_path, assembly_data_path + ".copy")
 
     kernel = args['kernel_id']
     new_kernel = args['new_kernel']
@@ -102,15 +85,15 @@ def script():
 
     try:
         os.system('touch ' + raw_grayscale_filtered_path)
-        print("Compiling files...")
-        os.system('riscv64-unknown-elf-as data.s filter.s io.s -o temp.o')
-        print("Linking files...")
-        os.system('riscv64-unknown-elf-ld temp.o -o ../output/filter.out')
-        print("Running simulation...")
+        # print("Compiling files...")
+        # os.system('riscv64-unknown-elf-as data.s filter.s io.s -o temp.o')
+        # print("Linking files...")
+        # os.system('riscv64-unknown-elf-ld temp.o -o ../output/filter.out')
+        # print("Running simulation...")
         os.system('rv-jit ../output/filter.out')
         print("Cleaning up...")
-        os.system('rm temp.o')
-        os.system('rm ../output/filter.out')
+        # os.system('rm temp.o')
+        # os.system('rm ./filter.out')
     except:
         print("Error")
 
@@ -123,17 +106,17 @@ def script():
     try:
         print("Displaying image...")
         image_handler.display_image(raw_grayscale_filtered_path, width, output_img_path, "Filtered image")
-        image_handler.display_image(raw_grayscale_unfiltered_path, width, input_img_path, "Unfiltered image")
+        image_handler.display_image(raw_grayscale_unfiltered_path, width, input_img_path, "Unfiltered image", True)
         print("Waiting for image...")
         cv2.waitKey(0)
         cv2.destroyAllWindows()
-    except:
+    except Exception:
+        print(Exception)
         print("Visualization error")
 
     print("Cleaning up...")
     os.system('rm ' + raw_grayscale_filtered_path)
     os.system('rm ' + raw_grayscale_unfiltered_path)
-    restore_file(assembly_data_path, assembly_data_path + ".copy")
     print("Done")
 
 

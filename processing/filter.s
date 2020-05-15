@@ -13,16 +13,28 @@ main:
         sd s6, 48(sp)
         sd s7, 56(sp)
 
-        # load constants
-        li s0, WIDTH
-        li s1, HEIGHT
-        li s2, BUFFER_SIZE
-
         lui a1, %hi(input_path)             # load input path(hi)
         addi a1, a1, %lo(input_path)        # load input path(lo)
         jal open_file
 
         mv s3, a0                           # input file descriptor
+
+        # load constants
+        mv a0, s3
+        addi sp, sp, -4
+        mv a1, sp                           # set buffer address
+        li a2, 4                            # bytes to read (width)
+        li a7, 63                           # _NR_sys_read
+        ecall                               # system call
+        lw s1, 0(sp)
+
+        mv a0, s3
+        ecall                               # system call
+        lw s0, 0(sp)
+
+        addi sp, sp, 4
+
+        li s2, BUFFER_SIZE
 
         lui a1, %hi(output_path)            # load output path(hi)
         addi a1, a1, %lo(output_path)       # load output path(lo)
@@ -39,6 +51,7 @@ main:
         li a2, 9                            # bytes to read (kernel size)
         li a7, 63                           # _NR_sys_read
         ecall                               # system call
+
 
         mv s5, sp                           # kernel address
 

@@ -1,16 +1,14 @@
 .section .rodata
 input_path:
-   .string "$$INPUT$$"
+   .string "raw_unfiltered"
 output_path:
-   .string "$$OUTPUT$$"
+   .string "raw_filtered"
 kernel_path:
-  .string "$$KERNEL$$"
+  .string ".kernel"
 file_found:
 	.string "File found\n"
 file_not_found:
 	.string "File not found\n"
 
 .section .text
-    .equ WIDTH, $$WIDTH$$
-    .equ HEIGHT, $$HEIGHT$$
-    .equ BUFFER_SIZE, $$BUFFER_SIZE$$
+    .equ BUFFER_SIZE, 650000

@@ -23,8 +23,10 @@ def make_grayscale(img_path, new_path):
         print("Error opening image at %s" % new_path)
         return 0, 0
     print("Writing image...")
-    # write new content
-    cont = 0
+
+    new_img.write(rows.to_bytes(4, byteorder='little'))
+    new_img.write(cols.to_bytes(4, byteorder='little'))
+
     for i in range(rows):
         for j in range(cols):
             new_img.write(bytes([gray_img[i, j]]))
@@ -36,11 +38,13 @@ def make_grayscale(img_path, new_path):
     return rows, cols
 
 
-def display_image(img_path, columns, new_path, name):
+def display_image(img_path, columns, new_path, name, remove_size=False):
     sharp_img = []
     row = []
     col = 0
     with open(img_path, "rb") as img:
+        if remove_size:
+            img.read(8)
         byte = img.read(1)
         while byte != b"":
             if col == columns:

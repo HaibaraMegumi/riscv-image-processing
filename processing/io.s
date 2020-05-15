@@ -3,7 +3,7 @@
 open_file:
 #input: a1 - file path
 #output: a0 - file descriptor id
-        li a0, 0
+        li a0, -100                             # implies relative path
         #li a2, 1026                            # mode read-write flag append
         li a2, 2                                # mode read-write
         li a7, 56                               # _NR_sys_openat

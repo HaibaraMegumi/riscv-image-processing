@@ -1,6 +1,3 @@
-[submodule "riscv-binutils-gdb"]
-	path = riscv-binutils-gdb
-	url = https://github.com/riscv/riscv-binutils-gdb.git
 [submodule "rv8"]
 	path = rv8
 	url = https://github.com/rv8-io/rv8.git
