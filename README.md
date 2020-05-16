@@ -139,3 +139,6 @@ cd sharpening
 git submodule update --init --recursive
 cd rv8
 make
+
+
+chmod +x install.sh
