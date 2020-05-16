@@ -1,0 +1,53 @@
+#!/bin/bash
+
+_help(){
+  echo
+  echo " Required arguments:"
+  echo " -i                    absolute or relative path to the input image"
+  echo
+  echo " Optional arguments:"
+  echo " -h                    show this help message"
+  echo " -o                    absolute or relative path of the desired output path"
+  echo " -n                    personalized 3x3 image processing kernel"
+  echo "                          format: 0, 1, 0, 1, -1, 1, 0, 1, 0"
+  echo " -k                    integer representing the kernel id"
+  echo "                           1: sharpening"
+  echo "                           2: over-sharpening"
+  echo "                           3: blurring"
+  echo "                           4: edge detection"
+  echo "                           5: emboss"
+  echo "                           6: bottom sobel"
+  echo "                           7: top sobel"
+  echo "                       defaults to sharpening"
+  echo
+  exit 1
+}
+
+IMG="-1"
+KERNEL=-1
+NEW_KERNEL=-1
+OUTPUT=-1
+
+while getopts i:k:n:o:h option
+do
+  case "${option}"
+    in
+      h) _help;;
+      i) IMG=${OPTARG};;
+      k) KERNEL=${OPTARG};;
+      n) NEW_KERNEL=${OPTARG};;
+      o) OUTPUT=${OPTARG};;
+      *) echo " Use -h to see help"
+         exit 1;;
+    esac
+done
+
+if [ $IMG != "-1" ]
+then
+  cd processing
+  python3 processing.py -i $IMG -k $KERNEL -nk $NEW_KERNEL -o $OUTPUT
+else
+  echo " Input file is required, use -h for help"
+fi
+
+exit 1

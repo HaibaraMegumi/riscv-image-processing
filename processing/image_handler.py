@@ -3,26 +3,26 @@ import numpy
 
 
 def make_grayscale(img_path, new_path):
-    print("Converting image to raw grayscale format...")
+    print(" Converting image to raw grayscale format...")
 
     # read input image
-    print("Opening image at %s..." % img_path)
+    print(" Opening image at %s..." % img_path)
     gray_img = cv2.imread(img_path, 0)
     if gray_img is None:
-        print("Error opening image at %s" % img_path)
+        print(" Error opening image at %s" % img_path)
         return 0, 0
 
-    print("Getting image dimensions...")
+    print(" Getting image dimensions...")
     rows, cols = gray_img.shape
-    print("%d, %d" % (rows, cols))
+    print(" %d, %d" % (rows, cols))
 
     # create output image
-    print("Storing grayscale image at %s..." % new_path)
+    print(" Storing grayscale image at %s..." % new_path)
     new_img = open(new_path, 'wb')
     if new_img is None:
-        print("Error opening image at %s" % new_path)
+        print(" Error opening image at %s" % new_path)
         return 0, 0
-    print("Writing image...")
+    print(" Writing image...")
 
     new_img.write(rows.to_bytes(4, byteorder='little'))
     new_img.write(cols.to_bytes(4, byteorder='little'))
@@ -32,9 +32,9 @@ def make_grayscale(img_path, new_path):
             new_img.write(bytes([gray_img[i, j]]))
 
     # close file
-    print("Closing image...")
+    print(" Closing image...")
     new_img.close()
-    print("Image converted successfully")
+    print(" Image converted successfully")
     return rows, cols
 
 

@@ -16,7 +16,7 @@ open_file:
 n:      li a0, 0                                # stdout
         lui a1, %hi(file_not_found)             # load msg(hi)
         addi a1, a1, %lo(file_not_found)        # load msg(lo)
-        li a2, 15                               # length
+        li a2, 16                               # length
         li a3, 0
         li a7, 64                               # _NR_sys_write
         ecall                                   # system call
@@ -26,7 +26,7 @@ n:      li a0, 0                                # stdout
 y:      li a0, 0                                # stdout
         lui a1, %hi(file_found)                 # load msg(hi)
         addi a1, a1, %lo(file_found)            # load msg(lo)
-        li a2, 11                               # length
+        li a2, 12                               # length
         li a3, 0
         li a7, 64                               # _NR_sys_write
         ecall                                   # system call

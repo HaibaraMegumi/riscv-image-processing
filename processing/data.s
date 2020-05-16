@@ -6,9 +6,9 @@ output_path:
 kernel_path:
   .string ".kernel"
 file_found:
-	.string "File found\n"
+	.string " File found\n"
 file_not_found:
-	.string "File not found\n"
+	.string " File not found\n"
 
 .section .text
     .equ BUFFER_SIZE, 650000
