@@ -38,7 +38,7 @@ def make_grayscale(img_path, new_path):
     return rows, cols
 
 
-def display_image(img_path, columns, new_path, name, remove_size=False):
+def display_image(img_path, columns, new_path, remove_size=False):
     sharp_img = []
     row = []
     col = 0
@@ -56,9 +56,4 @@ def display_image(img_path, columns, new_path, name, remove_size=False):
             byte = img.read(1)
         sharp_img.append(row)
     sharp_img = numpy.matrix(sharp_img, dtype=numpy.uint8)
-    # sharp_img = cv2.resize(sharp_img, (600,600))
-    win_name = name
-    cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)  # Create a named window
-    cv2.moveWindow(win_name, 40, 30)  # Move it to (40,30)
     cv2.imwrite(new_path, sharp_img)
-    cv2.imshow(win_name, sharp_img)

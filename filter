@@ -1,5 +1,10 @@
 #!/bin/bash
 
+LIBRARY=$PWD
+LIBRARY+="/rv8/build/linux_x86_64/lib"
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LIBRARY
+
 _help(){
   echo
   echo " Required arguments:"

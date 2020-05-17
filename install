@@ -11,6 +11,7 @@ apt install python3-pip
 pip3 install opencv-python
 pip3 install numpy
 pip3 install argparse
+pip3 install Pillow
 
 git submodule update --init --recursive
 cd ./rv8

@@ -1,7 +1,8 @@
+from PIL import Image
 import kernel_handler
 import image_handler
 import argparse
-import cv2
+import numpy
 import os
 
 
@@ -37,7 +38,7 @@ def update_kernel(kernel, new_kernel):
             kernel_handler.update_kernel([0, -1, 0, -1, 5, -1, 0, -1, 0])
     elif kernel == '2':  # over sharpening
         print(" Using kernel for over-sharpening...")
-        kernel_handler.update_kernel([0, -6, 0, -6, 6, -6, 0, -6, 0])
+        kernel_handler.update_kernel([-1, -2, -1, 2, 3, 2, -1, -2, -1])
     elif kernel == '3':  # blurring
         print(" Using kernel for blurring...")
         kernel_handler.update_kernel([1, -10, 1, -10, 1, -10, 1, -10, 1])
@@ -94,12 +95,16 @@ def script():
 
     try:
         print(" Displaying image...")
-        image_handler.display_image(raw_grayscale_filtered_path, width, output_img_path, "Filtered image")
-        image_handler.display_image(raw_grayscale_unfiltered_path, width, input_img_path, "Unfiltered image", True)
+        image_handler.display_image(raw_grayscale_filtered_path, width, output_img_path)
+        image_handler.display_image(raw_grayscale_unfiltered_path, width, input_img_path, True)
         print(" Waiting for image...")
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-    except Exception:
+        filtered = Image.open(output_img_path)
+        filtered.thumbnail((960, 1080), Image.ANTIALIAS)
+        unfiltered = Image.open(input_img_path)
+        unfiltered.thumbnail((960, 1080), Image.ANTIALIAS)
+        merged = Image.fromarray(numpy.hstack((numpy.array(unfiltered), numpy.array(filtered))))
+        merged.show()
+    except:
         print(" Visualization error")
 
     print(" Cleaning up...")
