@@ -8,13 +8,13 @@ import os
 
 # Construct the argument parser
 def initialize_argument_parser():
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(prefix_chars='@')
 
     # Add the arguments to the parser
-    ap.add_argument("-i", "--img-path", required=True)
-    ap.add_argument("-k", "--kernel-id", required=False)
-    ap.add_argument("-o", "--output", required=False)
-    ap.add_argument("-nk", "--new-kernel", required=False)
+    ap.add_argument("@i", "@@img-path", required=True)
+    ap.add_argument("@k", "@@kernel-id", required=False)
+    ap.add_argument("@o", "@@output", required=False)
+    ap.add_argument("@nk", "@@new-kernel", required=False)
     return vars(ap.parse_args())
 
 
@@ -76,6 +76,7 @@ def script():
 
     kernel = args['kernel_id']
     new_kernel = args['new_kernel']
+    print(new_kernel)
 
     update_kernel(kernel, new_kernel)
 

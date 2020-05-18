@@ -50,7 +50,7 @@ done
 if [ $IMG != "-1" ]
 then
   cd processing
-  python3 processing.py -i $IMG -k $KERNEL -nk $NEW_KERNEL -o $OUTPUT
+  python3 processing.py @i $IMG @k $KERNEL @nk $NEW_KERNEL @o $OUTPUT
 else
   echo " Input file is required, use -h for help"
 fi
