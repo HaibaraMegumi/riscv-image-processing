@@ -36,7 +36,7 @@ pip3 install argparse
 pip3 install Pillow
 ```
 
-##Installation
+## Installation
 The installation and a quick demo of the project can be followed in the next [video](https://www.youtube.com/watch?v=4rwYiPecA10&t=3s).
 
 Clone this repository into a directory where you have permissions `git clone https://github.com/m-herrera/riscv-image-processing`,
@@ -52,7 +52,7 @@ Run the installation script and give root permissions if prompted.
 ```bash
 ./install
 ```
-##Use
+## Use
 
 The filtering is done by running the **filter** script with its arguments. If necessary type `./filter -h`
 to see help function and possible arguments.
@@ -93,6 +93,6 @@ Remember its the path to the output file not the directory, the file will be cre
 
 The output image has the unfiltered image on the left and the filtered image on the right. 
 
-##Thanks
+## Thanks
 
 For further questions or comments please contact me at m.herrera0799@gmail.com.
